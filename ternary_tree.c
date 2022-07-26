@@ -23,6 +23,7 @@ inline static void stack_init(Stack *stk) {
   stk->cap = 0;
 }
 
+/* Expand to double size larger than old */
 inline static size_t stack_get_new_size(Stack *stk) {
   return stk->cap == 0 ? 1 : stk->cap << 1;
 }
@@ -52,19 +53,21 @@ inline static void *stack_pop(Stack *stk) {
 
 inline static void stack_free(Stack *stk) {
   free(stk->arr);
+  stk->arr = NULL;
+  stk->top = stk->cap = 0;
 }
 
 /* Get logical next node of \p node */
 inline static Node **ternary_get_next_node(Node *node, char const **str) {
+  assert(str);
   assert(*str);
   assert(node);
 
   const int diff = node->c - **str;
-  if (diff < 0) {
+  if (diff < 0)
     return &(node->right);
-  } else if (diff > 0) {
+  else if (diff > 0)
     return &(node->left);
-  }
 
   /* Equal to the current character */
   (*str)++; /* Forward */
@@ -92,18 +95,20 @@ char *ternary_search(TernaryNode const *root, char const *str) {
     else if (diff < 0)
       root = root->right;
     else {
+      /* Allow empty string */
       if (!*str) {
-        /* The last node of path, i.e. match string */
+        /* The last node of path, i.e. matching string */
         if (!root->c)
           return (char *)root->mid;
-        else break; /* Prefix string of another string */
+        else break; /* Prefix of another string */
       }
       
       ++str;
       root = root->mid;
     }
   }
-
+  
+  /* No such string exists */
   return NULL;
 }
 
@@ -126,19 +131,19 @@ char *ternary_add(Node **root, char const *str, bool store) {
     pcur = ternary_get_next_node(cur, &str);
   }
 
-  /* str is: 
+  /* str may be a: 
    * * new string with unique suffix
    * * prefix of another string
    *
-   * Construct a string path.
+   * Construct a string path along the mid pointer.
    *
    * The last node store string in its mid pointer.
-   * To support such property, it must be a special and
+   * To support the property, it must be a special and
    * unique node.
    * Otherwise, the prefix of another string insert will be
    * difficult.
    *
-   * To identify it is the last node, set its stored charater 
+   * To identify it is the last node, set its stored charater to
    * be 0 that is convenient for checking comparison of node->c and *str
    */
   while ((*pcur = ternary_new_node(*str))) {
@@ -205,13 +210,15 @@ void ternary_search_prefix_num(Node const *root, char const *prefix, ternary_str
 static void ternary_free_(Node *root) {
   if (root->left)
     ternary_free_(root->left);
-  if (root->c && root->mid)
-    ternary_free_(root->mid);
+  if (root->mid) {
+    if (root->c)
+      ternary_free_(root->mid);
+    else if (root->store)
+      free(root->mid);
+  }
   if (root->right)
     ternary_free_(root->right);
 
-  if (root->store)
-    free(root->mid);
   free(root);
 }
 
@@ -251,23 +258,43 @@ static void ternary_remove_(Node **root, Stack *stk) {
     pvictim = (Node **)stack_pop(stk);
     victim = *pvictim;
   }
+  
+  /* Current, the victim is the first node with child */
 
   /* The node in a prefix path of another string,
    * we can't free it
    */
   if (victim->mid) return;
-
+  
   if (victim->left && victim->right) {
-    /* Transplant */
+    /* Transplant:
+     *     victim
+     *   /       \
+     *  left     right
+     * / | \
+     * * * nil
+     * left replace victim and set right
+     */
     if (victim->left->right) {
       victim->left->right = victim->right;
       *pvictim = victim->left;
     } else if (victim->right->left) {
+      /* symmetric case */
       victim->right->left = victim->left;
       *pvictim = victim->right;
     }
-    /* Can't to transplant, just leave in the tree
-     * as a sentinel 
+    /*
+     *     victim
+     *    /      \
+     *  left     right
+     * /  | \
+     * *  *  * 
+     *
+     * If victim->left->right is not NULL, 
+     * ratation may be complex.
+     *
+     * Can't to transplant, just leave in the tree
+     * and as a sentinel.
      */
   } else if (victim->right) {
     // left is NULL
@@ -288,6 +315,7 @@ bool ternary_remove(Node **root, char const *str) {
   
   while ((cur = *pcur)) {
     stack_push(&node_stk, pcur);
+    /* The string path has pushed to stack */
     if (!*str && !cur->c) {
       ternary_remove_(root, &node_stk);
       stack_free(&node_stk);
