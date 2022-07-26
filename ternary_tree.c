@@ -191,12 +191,17 @@ void ternary_search_prefix_num(Node const *root, char const *prefix, ternary_str
     else if (diff > 0)
       root = root->left;
     else {
-      /* Search match string in the subtree rooted by the node with
-       * last character of str recursively
+      /* Search matching string in the subtree rooted 
+       * by the mid pointer of the node with the last 
+       * character of str recursively
+       *
+       * Because prefix just a slice of existed string
+       * in the tree, we must stop when meeting the last
+       * character
        */
       if (*(++prefix) == 0) {
         size_t n = 0;
-        search_match_str(root, cb, &n, num);
+        search_match_str(root->mid, cb, &n, num);
         break;
       }
       root = root->mid;
@@ -210,15 +215,14 @@ void ternary_search_prefix_num(Node const *root, char const *prefix, ternary_str
 static void ternary_free_(Node *root) {
   if (root->left)
     ternary_free_(root->left);
-  if (root->mid) {
-    if (root->c)
+  if (root->c && root->mid) {
       ternary_free_(root->mid);
-    else if (root->store)
-      free(root->mid);
   }
   if (root->right)
     ternary_free_(root->right);
 
+  if (root->store)
+    free(root->mid);
   free(root);
 }
 
@@ -275,14 +279,14 @@ static void ternary_remove_(Node **root, Stack *stk) {
      * * * nil
      * left replace victim and set right
      */
-    if (victim->left->right) {
+    if (!victim->left->right) {
       victim->left->right = victim->right;
       *pvictim = victim->left;
-    } else if (victim->right->left) {
+    } else if (!victim->right->left) {
       /* symmetric case */
       victim->right->left = victim->left;
       *pvictim = victim->right;
-    }
+    } else return;
     /*
      *     victim
      *    /      \
@@ -303,6 +307,8 @@ static void ternary_remove_(Node **root, Stack *stk) {
     // right is NULL
     *pvictim = victim->left;
   }
+
+  free(victim);
 }
 
 bool ternary_remove(Node **root, char const *str) {
