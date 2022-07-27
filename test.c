@@ -52,6 +52,8 @@ void test_mini() {
   
   puts("search prefix: empty");
   ternary_search_prefix(root, "", &print_str);
+  puts("search prefix: s");
+  ternary_search_prefix(root, "s", &print_str);
   
   puts("search prefix: strx");
   ternary_search_prefix(root, "strx", &print_str);

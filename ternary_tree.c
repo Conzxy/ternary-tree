@@ -199,12 +199,12 @@ void ternary_search_prefix_num(Node const *root, char const *prefix, ternary_str
        * in the tree, we must stop when meeting the last
        * character
        */
+      root = root->mid;
       if (*(++prefix) == 0) {
         size_t n = 0;
-        search_match_str(root->mid, cb, &n, num);
+        search_match_str(root, cb, &n, num);
         break;
       }
-      root = root->mid;
     }
     
     if (!*prefix)
@@ -319,6 +319,11 @@ bool ternary_remove(Node **root, char const *str) {
   Stack node_stk;
   stack_init(&node_stk);
   
+  /* If str exists in the tree,
+   * we must push all nodes in the path
+   * to the stack since we don't know the longest
+   * prefix of str in the tree.
+   */
   while ((cur = *pcur)) {
     stack_push(&node_stk, pcur);
     /* The string path has pushed to stack */
