@@ -160,25 +160,25 @@ char *ternary_add(Node **root, char const *str, bool store) {
   return NULL;
 }
 
-static void search_match_str(Node const *root, ternary_str_callback cb, size_t *num, size_t max_num) {
+static void search_match_str(Node const *root, ternary_str_callback cb, void *args, size_t *num, size_t max_num) {
   if (!root || *num >= max_num) return;
   
-  search_match_str(root->left, cb, num, max_num);
+  search_match_str(root->left, cb, args, num, max_num);
   if (!root->c) {
     *num += 1; 
-    cb((char const *)root->mid);
+    cb((char const *)root->mid, args);
   } else
-    search_match_str(root->mid, cb, num, max_num);
-  search_match_str(root->right, cb, num, max_num);
+    search_match_str(root->mid, cb, args, num, max_num);
+  search_match_str(root->right, cb, args, num, max_num);
 }
 
-void ternary_search_prefix_num(Node const *root, char const *prefix, ternary_str_callback cb, size_t num) {
+void ternary_search_prefix_num(Node const *root, char const *prefix, ternary_str_callback cb, void *args, size_t num) {
   if (!root || !prefix) return;
   
   /* If prefix is empty string, process all strings */
   if (!*prefix) {
     size_t n = 0;
-    search_match_str(root, cb, &n, num);
+    search_match_str(root, cb, args, &n, num);
     return;
   }
 
@@ -202,7 +202,7 @@ void ternary_search_prefix_num(Node const *root, char const *prefix, ternary_str
       root = root->mid;
       if (*(++prefix) == 0) {
         size_t n = 0;
-        search_match_str(root, cb, &n, num);
+        search_match_str(root, cb, args, &n, num);
         break;
       }
     }

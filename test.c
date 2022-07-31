@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <string.h>
 
-void print_str(char const *str) {
+void print_str(char const *str, void *args) {
   printf("%s\n", str);
 }
 
@@ -46,25 +46,25 @@ void test_mini() {
   CHECK_SEARCH(root, "exit");
   CHECK_SEARCH(root, "setadd");
   puts("search prefix: str");
-  ternary_search_prefix(root, "str", &print_str);
+  ternary_search_prefix(root, "str", &print_str, NULL);
   puts("search prefix: stradd");
-  ternary_search_prefix(root, "stradd", &print_str);
+  ternary_search_prefix(root, "stradd", &print_str, NULL);
   
   puts("search prefix: empty");
-  ternary_search_prefix(root, "", &print_str);
+  ternary_search_prefix(root, "", &print_str, NULL);
   puts("search prefix: s");
-  ternary_search_prefix(root, "s", &print_str);
+  ternary_search_prefix(root, "s", &print_str, NULL);
   
   puts("search prefix: strx");
-  ternary_search_prefix(root, "strx", &print_str);
+  ternary_search_prefix(root, "strx", &print_str, NULL);
   
   puts("remove: stradd");
   ternary_remove(&root, "stradd");
-  ternary_search_prefix(root, "str", &print_str);
+  ternary_search_prefix(root, "str", &print_str, NULL);
   
   puts("remove: strset");
   ternary_remove(&root, "strset");
-  ternary_search_prefix(root, "str", &print_str);
+  ternary_search_prefix(root, "str", &print_str, NULL);
   
   puts("remove: xxx");
   CHECK_REMOVE(root, "xxx"); 
@@ -236,7 +236,7 @@ void test_large() {
     ternary_add(&root, arr[i], false);
 
   puts("search prefix: a");
-  ternary_search_prefix(root, "a", &print_str);
+  ternary_search_prefix(root, "a", &print_str, NULL);
   
   ternary_free(&root);
 }

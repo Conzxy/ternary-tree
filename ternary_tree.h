@@ -41,7 +41,7 @@ typedef struct _TernaryNode {
 /*-----------------------------------------*/
 
 /** Callback to process match str of prefix search */
-typedef void(*ternary_str_callback)(char const *);
+typedef void(*ternary_str_callback)(char const *, void*);
 
 /**
  * \brief Add str to ternary tree
@@ -66,12 +66,12 @@ char *ternary_search(TernaryNode const *root, char const *str);
  * \param cb The callback to process match strings
  * \param num The maximum number of match strings you want process
  */
-void ternary_search_prefix_num(TernaryNode const *root, char const *prefix, ternary_str_callback cb, size_t num);
+void ternary_search_prefix_num(TernaryNode const *root, char const *prefix, ternary_str_callback cb, void *args, size_t num);
 
 /**
  * \brief Search all matching strings in the tree according the prefix*/
-inline void ternary_search_prefix(TernaryNode const *root, char const *prefix, ternary_str_callback cb) {
-  ternary_search_prefix_num(root, prefix, cb, (size_t)-1);
+inline void ternary_search_prefix(TernaryNode const *root, char const *prefix, ternary_str_callback cb, void *args) {
+  ternary_search_prefix_num(root, prefix, cb, args, (size_t)-1);
 }
 
 /**

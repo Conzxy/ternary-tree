@@ -57,16 +57,23 @@ Add: stradd, strget, strset, str
 ```
 
 ## Search prefix
-`TST`是一种适合于`前缀查找`的数据结构，也提供了对应的API：
+`TST`是一种适合于`前缀查找`的数据结构，也提供了对应的API:
 ```c
 /* 对匹配的字符串调用callback
  * e.g. print, store to another place
  */
-ternary_search_prefix(root, prefix-str, callback);
+ternary_search_prefix(root, prefix-str, callback, args);
 
 /* num指定了处理的匹配字符串最大数目
  * 如果匹配数 >= num，只会调用num
  * 匹配数 < num，调用的仅是匹配数
  */
-ternary_search_prefix(root, prefix-str, callback, num);
+ternary_search_prefix(root, prefix-str, callback, args, num);
+```
+目前主要是通过注册回调来处理匹配的字符串：
+```c
+/* str matching string
+ * args generic arguments(user interpret)
+ */
+typedef void(*ternary_str_callback)(char const *str, void*args);
 ```
